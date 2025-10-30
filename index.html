@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to Bow App...</title>
+    <meta http-equiv="refresh" content="1">
+    <script>
+        (function() {
+            // Get the query parameters from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+
+            // Build the app deep link URL
+            const appScheme = 'acme://mercado-libre-callback';
+            
+            let redirectUrl;
+            
+            if (error) {
+                // Redirect with error
+                redirectUrl = appScheme + '?error=' + encodeURIComponent(error);
+                if (errorDescription) {
+                    redirectUrl += '&error_description=' + encodeURIComponent(errorDescription);
+                }
+            } else if (code && state) {
+                // Redirect with code and state
+                redirectUrl = appScheme + '?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state);
+            } else {
+                // Missing parameters - show error
+                document.getElementById('error').style.display = 'block';
+                return;
+            }
+
+            // Try to redirect to the app
+            try {
+                // For iOS
+                window.location = redirectUrl;
+                
+                // Fallback for Android/web
+                setTimeout(function() {
+                    window.location.href = redirectUrl;
+                }, 250);
+                
+                // Show fallback message after 2 seconds
+                setTimeout(function() {
+                    document.getElementById('fallback').style.display = 'block';
+                    document.getElementById('redirect-link').href = redirectUrl;
+                }, 2000);
+            } catch (e) {
+                console.error('Redirect error:', e);
+                document.getElementById('error').style.display = 'block';
+            }
+        })();
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h2 {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        a:hover {
+            background: #ffd700;
+            color: #667eea;
+        }
+        #fallback, #error {
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Redirecting to Bow App...</h2>
+        <div class="spinner"></div>
+        <p>Please wait while we redirect you...</p>
+        
+        <div id="fallback" style="display: none;">
+            <p>If the app doesn't open automatically:</p>
+            <a id="redirect-link" href="acme://mercado-libre-callback">Open in Bow App</a>
+        </div>
+        
+        <div id="error" style="display: none;">
+            <p style="color: #ff6b6b;">⚠️ Error: Missing authorization parameters</p>
+            <p style="font-size: 14px; opacity: 0.8;">Please try connecting again from the app.</p>
+        </div>
+    </div>
+</body>
+</html>
+
